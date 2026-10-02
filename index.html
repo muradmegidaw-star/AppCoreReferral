@@ -43,7 +43,8 @@ body{
 }
 
 button,
-input{
+input,
+select{
     font:inherit;
 }
 
@@ -116,7 +117,8 @@ label{
     margin:0 0 7px 2px;
 }
 
-input{
+input,
+select{
     width:100%;
     height:50px;
     border:1px solid var(--border);
@@ -128,7 +130,13 @@ input{
     transition:.2s;
 }
 
-input:focus{
+select{
+    appearance:none;
+    -webkit-appearance:none;
+}
+
+input:focus,
+select:focus{
     border-color:var(--accent);
     box-shadow:0 0 0 3px rgba(124,92,255,.12);
 }
@@ -154,8 +162,9 @@ input::placeholder{
 }
 
 .primary:disabled{
-    opacity:.55;
+    opacity:.45;
     cursor:default;
+    box-shadow:none;
 }
 
 .secondary{
@@ -357,23 +366,109 @@ input::placeholder{
     margin-top:10px;
 }
 
+/* Withdrawal */
+
 .withdraw-card{
     margin-top:14px;
 }
 
-.withdraw-row{
+.withdraw-head{
     display:flex;
-    gap:9px;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+}
+
+.withdraw-available{
+    color:#a996ff;
+    font-size:12px;
+    font-weight:600;
+}
+
+.withdraw-info{
+    margin-top:12px;
+    padding:14px;
+    border-radius:15px;
+    background:#0d0f15;
+    border:1px solid var(--border);
+}
+
+.withdraw-info-title{
+    font-size:13px;
+    font-weight:700;
+}
+
+.withdraw-info-text{
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.45;
+    margin-top:4px;
+}
+
+.withdraw-form{
+    margin-top:16px;
+}
+
+.withdraw-form .field:last-child{
+    margin-bottom:0;
+}
+
+.bank-wrap{
+    position:relative;
+}
+
+.bank-wrap:after{
+    content:"⌄";
+    position:absolute;
+    right:16px;
+    top:14px;
+    color:#858b9a;
+    pointer-events:none;
+    font-size:18px;
+}
+
+.withdraw-actions{
+    margin-top:17px;
+}
+
+.withdraw-actions .primary{
+    height:52px;
+}
+
+.saved-details{
+    display:none;
+    margin-top:12px;
+    padding:12px 13px;
+    border-radius:13px;
+    background:rgba(53,201,138,.07);
+    border:1px solid rgba(53,201,138,.16);
+    color:#9be7c7;
+    font-size:12px;
+    line-height:1.5;
+}
+
+.saved-details.show{
+    display:block;
+}
+
+.withdraw-status{
     margin-top:13px;
+    padding:13px;
+    border-radius:14px;
+    background:#10121a;
+    border:1px solid var(--border);
 }
 
-.withdraw-row input{
-    flex:1;
+.withdraw-status-title{
+    font-size:13px;
+    font-weight:700;
 }
 
-.withdraw-row button{
-    width:130px;
-    flex-shrink:0;
+.withdraw-status-text{
+    color:var(--muted);
+    font-size:12px;
+    margin-top:4px;
+    line-height:1.45;
 }
 
 .support{
@@ -444,6 +539,31 @@ input::placeholder{
     font-size:13px;
     line-height:1.5;
     margin-bottom:17px;
+}
+
+.modal-summary{
+    background:#0d0f15;
+    border:1px solid var(--border);
+    border-radius:15px;
+    padding:14px;
+    margin-bottom:16px;
+}
+
+.summary-row{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    padding:5px 0;
+    font-size:13px;
+}
+
+.summary-row span:first-child{
+    color:var(--muted);
+}
+
+.summary-row span:last-child{
+    color:#f5f7fb;
+    text-align:right;
 }
 
 .modal-buttons{
@@ -683,42 +803,151 @@ input::placeholder{
 
         </div>
 
+        <!-- WITHDRAW -->
         <div class="card withdraw-card">
 
-            <h2>Получить выплату</h2>
+            <div class="withdraw-head">
+                <h2>Вывод средств</h2>
 
-            <div class="small-note">
-                Минимальная сумма выплаты — 500 ₽.
+                <div
+                    id="withdrawAvailable"
+                    class="withdraw-available"
+                >
+                    0 ₽ доступно
+                </div>
+            </div>
+
+            <div class="withdraw-info">
+
+                <div class="withdraw-info-title">
+                    Минимальная сумма — 500 ₽
+                </div>
+
+                <div
+                    id="withdrawInfoText"
+                    class="withdraw-info-text"
+                >
+                    Накопите 500 ₽, чтобы оформить выплату.
+                </div>
+
             </div>
 
             <div id="withdrawMessage" class="message"></div>
 
-            <div class="withdraw-row">
+            <div class="withdraw-form">
 
-                <input
-                    id="withdrawAmount"
-                    type="number"
-                    inputmode="numeric"
-                    min="500"
-                    step="50"
-                    placeholder="Сумма"
-                >
+                <div class="field">
+                    <label>Сумма вывода</label>
 
-                <button id="withdrawBtn" class="primary">
-                    Вывести
-                </button>
+                    <input
+                        id="withdrawAmount"
+                        type="number"
+                        inputmode="numeric"
+                        min="500"
+                        step="50"
+                        placeholder="Например, 500"
+                    >
+                </div>
 
-            </div>
+                <div class="field">
+                    <label>Номер телефона</label>
 
-            <div class="field" style="margin-top:12px;margin-bottom:0">
-                <label>Реквизиты для выплаты</label>
+                    <input
+                        id="payoutPhone"
+                        type="tel"
+                        inputmode="tel"
+                        autocomplete="tel"
+                        placeholder="+7 900 000-00-00"
+                    >
+                </div>
 
-                <input
-                    id="paymentDetails"
-                    type="text"
-                    maxlength="300"
-                    placeholder="Например: номер карты или СБП"
-                >
+                <div class="field">
+                    <label>Банк получателя</label>
+
+                    <div class="bank-wrap">
+                        <select id="payoutBank">
+
+                            <option value="">
+                                Выберите банк
+                            </option>
+
+                            <option value="Сбербанк">
+                                Сбербанк
+                            </option>
+
+                            <option value="Т-Банк">
+                                Т-Банк
+                            </option>
+
+                            <option value="Альфа-Банк">
+                                Альфа-Банк
+                            </option>
+
+                            <option value="ВТБ">
+                                ВТБ
+                            </option>
+
+                            <option value="ПСБ">
+                                ПСБ
+                            </option>
+
+                            <option value="Газпромбанк">
+                                Газпромбанк
+                            </option>
+
+                            <option value="Россельхозбанк">
+                                Россельхозбанк
+                            </option>
+
+                            <option value="Другой банк">
+                                Другой банк
+                            </option>
+
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Имя получателя</label>
+
+                    <input
+                        id="payoutFirstName"
+                        type="text"
+                        autocomplete="given-name"
+                        maxlength="50"
+                        placeholder="Введите имя"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Фамилия получателя</label>
+
+                    <input
+                        id="payoutLastName"
+                        type="text"
+                        autocomplete="family-name"
+                        maxlength="50"
+                        placeholder="Введите фамилию"
+                    >
+                </div>
+
+                <div
+                    id="savedDetails"
+                    class="saved-details"
+                ></div>
+
+                <div class="withdraw-actions">
+
+                    <button
+                        id="withdrawBtn"
+                        class="primary"
+                        disabled
+                    >
+                        Вывести средства
+                    </button>
+
+                </div>
+
             </div>
 
         </div>
@@ -737,10 +966,36 @@ input::placeholder{
     <div class="modal-box">
 
         <div class="modal-title">
-            Заявка на выплату
+            Подтвердите вывод
         </div>
 
-        <div id="withdrawModalText" class="modal-text"></div>
+        <div class="modal-text">
+            Проверьте реквизиты получателя перед отправкой заявки.
+        </div>
+
+        <div class="modal-summary">
+
+            <div class="summary-row">
+                <span>Сумма</span>
+                <span id="summaryAmount">0 ₽</span>
+            </div>
+
+            <div class="summary-row">
+                <span>Телефон</span>
+                <span id="summaryPhone">—</span>
+            </div>
+
+            <div class="summary-row">
+                <span>Банк</span>
+                <span id="summaryBank">—</span>
+            </div>
+
+            <div class="summary-row">
+                <span>Получатель</span>
+                <span id="summaryName">—</span>
+            </div>
+
+        </div>
 
         <div class="modal-buttons">
 
@@ -755,7 +1010,7 @@ input::placeholder{
                 id="confirmWithdraw"
                 class="primary"
             >
-                Подтвердить
+                Отправить
             </button>
 
         </div>
@@ -784,8 +1039,7 @@ const REFERRAL_KEY =
 const VISITOR_KEY =
     "appcore_referral_visitor";
 
-const MIN_WITHDRAW =
-    500;
+const MIN_WITHDRAW = 500;
 
 
 /* =========================================================
@@ -816,6 +1070,12 @@ const registerMessage =
 const withdrawMessage =
     document.getElementById("withdrawMessage");
 
+const withdrawBtn =
+    document.getElementById("withdrawBtn");
+
+let currentSession = null;
+let pendingWithdraw = null;
+
 
 /* =========================================================
    SUPABASE RPC
@@ -823,23 +1083,24 @@ const withdrawMessage =
 
 async function rpc(functionName, body){
 
-    const response = await fetch(
-        SUPABASE_URL +
-        "/rest/v1/rpc/" +
-        functionName,
-        {
-            method:"POST",
+    const response =
+        await fetch(
+            SUPABASE_URL +
+            "/rest/v1/rpc/" +
+            functionName,
+            {
+                method:"POST",
 
-            headers:{
-                "Content-Type":"application/json",
-                "apikey":SUPABASE_KEY,
-                "Authorization":
-                    "Bearer " + SUPABASE_KEY
-            },
+                headers:{
+                    "Content-Type":"application/json",
+                    "apikey":SUPABASE_KEY,
+                    "Authorization":
+                        "Bearer " + SUPABASE_KEY
+                },
 
-            body:JSON.stringify(body || {})
-        }
-    );
+                body:JSON.stringify(body || {})
+            }
+        );
 
     const text =
         await response.text();
@@ -847,7 +1108,10 @@ async function rpc(functionName, body){
     let data = null;
 
     try{
-        data = text ? JSON.parse(text) : null;
+        data =
+            text
+                ? JSON.parse(text)
+                : null;
     }catch{
         data = text;
     }
@@ -861,10 +1125,12 @@ async function rpc(functionName, body){
             data &&
             typeof data === "object"
         ){
+
             message =
                 data.message ||
                 data.error_description ||
                 data.hint ||
+                data.error ||
                 message;
         }
 
@@ -879,7 +1145,11 @@ async function rpc(functionName, body){
    HELPERS
    ========================================================= */
 
-function showMessage(element,text,type="error"){
+function showMessage(
+    element,
+    text,
+    type="error"
+){
 
     element.className =
         "message " + type;
@@ -966,6 +1236,16 @@ function getReferralCodeFromUrl(){
         .toUpperCase();
 }
 
+function formatMoney(value){
+
+    const number =
+        Number(value || 0);
+
+    return number.toLocaleString(
+        "ru-RU"
+    );
+}
+
 
 /* =========================================================
    REFERRAL CLICK
@@ -978,10 +1258,6 @@ async function processReferralClick(){
 
     if(urlCode){
 
-        /*
-         * Сохраняем первый полученный код.
-         * Последующая ссылка не меняет его.
-         */
         if(
             !localStorage.getItem(
                 REFERRAL_KEY
@@ -1016,10 +1292,6 @@ async function processReferralClick(){
 
     }catch(error){
 
-        /*
-         * Ошибка перехода не должна
-         * мешать открытию сайта.
-         */
         console.log(
             "Referral click:",
             error.message
@@ -1029,7 +1301,7 @@ async function processReferralClick(){
 
 
 /* =========================================================
-   SHOW / HIDE AUTH
+   AUTH
    ========================================================= */
 
 function showLogin(){
@@ -1042,7 +1314,9 @@ function showLogin(){
         "hidden"
     );
 
-    clearMessage(registerMessage);
+    clearMessage(
+        registerMessage
+    );
 }
 
 function showRegister(){
@@ -1055,7 +1329,9 @@ function showRegister(){
         "hidden"
     );
 
-    clearMessage(loginMessage);
+    clearMessage(
+        loginMessage
+    );
 }
 
 
@@ -1163,7 +1439,9 @@ async function register(){
             !result ||
             !result.success
         ){
+
             throw new Error(
+                result?.error ||
                 "Не удалось создать аккаунт."
             );
         }
@@ -1172,10 +1450,6 @@ async function register(){
             result.token
         );
 
-        /*
-         * После регистрации код больше
-         * не нужен для повторной привязки.
-         */
         localStorage.removeItem(
             REFERRAL_KEY
         );
@@ -1267,7 +1541,9 @@ async function login(){
             !result ||
             !result.success
         ){
+
             throw new Error(
+                result?.error ||
                 "Не удалось выполнить вход."
             );
         }
@@ -1313,20 +1589,242 @@ async function getSession(token){
 
 
 /* =========================================================
-   DASHBOARD
+   WITHDRAW UI
    ========================================================= */
 
-function formatMoney(value){
+function updateWithdrawState(balance){
 
-    const number =
-        Number(value || 0);
+    const available =
+        Number(balance || 0);
 
-    return number.toLocaleString(
-        "ru-RU"
+    document.getElementById(
+        "withdrawAvailable"
+    ).textContent =
+        formatMoney(available) +
+        " ₽ доступно";
+
+    const info =
+        document.getElementById(
+            "withdrawInfoText"
+        );
+
+    if(available < MIN_WITHDRAW){
+
+        const remaining =
+            MIN_WITHDRAW - available;
+
+        info.textContent =
+            "До минимальной суммы вывода не хватает " +
+            formatMoney(remaining) +
+            " ₽.";
+
+        withdrawBtn.disabled = true;
+
+    }else{
+
+        info.textContent =
+            "Вы можете вывести от 500 ₽ до " +
+            formatMoney(available) +
+            " ₽.";
+
+        withdrawBtn.disabled = false;
+    }
+
+    const amountInput =
+        document.getElementById(
+            "withdrawAmount"
+        );
+
+    amountInput.max =
+        available;
+
+    if(available < MIN_WITHDRAW){
+
+        amountInput.value = "";
+    }
+}
+
+function loadSavedPayoutDetails(){
+
+    /*
+     * Пока реквизиты хранятся в браузере только
+     * после успешной заявки. Серверная запись также
+     * создаётся функцией submit_referral_withdrawal.
+     */
+
+    const saved =
+        localStorage.getItem(
+            "appcore_payout_details"
+        );
+
+    if(!saved){
+        return;
+    }
+
+    try{
+
+        const data =
+            JSON.parse(saved);
+
+        if(data.phone){
+            document.getElementById(
+                "payoutPhone"
+            ).value =
+                data.phone;
+        }
+
+        if(data.bank_name){
+
+            document.getElementById(
+                "payoutBank"
+            ).value =
+                data.bank_name;
+        }
+
+        if(data.first_name){
+
+            document.getElementById(
+                "payoutFirstName"
+            ).value =
+                data.first_name;
+        }
+
+        if(data.last_name){
+
+            document.getElementById(
+                "payoutLastName"
+            ).value =
+                data.last_name;
+        }
+
+        document.getElementById(
+            "savedDetails"
+        ).classList.add(
+            "show"
+        );
+
+        document.getElementById(
+            "savedDetails"
+        ).textContent =
+            "Сохранённые реквизиты загружены. " +
+            "При необходимости измените их перед выплатой.";
+
+    }catch{
+        localStorage.removeItem(
+            "appcore_payout_details"
+        );
+    }
+}
+
+function getPayoutForm(){
+
+    const amount =
+        Number(
+            document.getElementById(
+                "withdrawAmount"
+            ).value
+        );
+
+    const phone =
+        normalizePhone(
+            document.getElementById(
+                "payoutPhone"
+            ).value
+        );
+
+    const bankName =
+        document.getElementById(
+            "payoutBank"
+        ).value.trim();
+
+    const firstName =
+        document.getElementById(
+            "payoutFirstName"
+        ).value.trim();
+
+    const lastName =
+        document.getElementById(
+            "payoutLastName"
+        ).value.trim();
+
+    return {
+        amount,
+        phone,
+        bankName,
+        firstName,
+        lastName
+    };
+}
+
+function validatePayoutForm(data,balance){
+
+    if(!Number.isFinite(data.amount)){
+
+        return "Введите сумму вывода.";
+    }
+
+    if(data.amount < MIN_WITHDRAW){
+
+        return "Минимальная сумма вывода — 500 ₽.";
+    }
+
+    if(data.amount > balance){
+
+        return "Сумма вывода больше доступного баланса.";
+    }
+
+    if(data.amount % 1 !== 0){
+
+        return "Сумма вывода должна быть целым числом.";
+    }
+
+    if(data.phone.length < 10){
+
+        return "Укажите корректный номер телефона.";
+    }
+
+    if(!data.bankName){
+
+        return "Выберите банк получателя.";
+    }
+
+    if(data.firstName.length < 2){
+
+        return "Укажите имя получателя.";
+    }
+
+    if(data.lastName.length < 2){
+
+        return "Укажите фамилию получателя.";
+    }
+
+    return null;
+}
+
+function maskPhone(phone){
+
+    const value =
+        String(phone || "");
+
+    if(value.length < 7){
+        return value;
+    }
+
+    return (
+        value.slice(0,4) +
+        " *** ** " +
+        value.slice(-2)
     );
 }
 
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
+
 function renderDashboard(data){
+
+    currentSession = data;
 
     document.getElementById(
         "dashboardUsername"
@@ -1359,12 +1857,14 @@ function renderDashboard(data){
     document.getElementById(
         "earnedValue"
     ).textContent =
-        formatMoney(earned) + " ₽";
+        formatMoney(earned) +
+        " ₽";
 
     document.getElementById(
         "withdrawnValue"
     ).textContent =
-        formatMoney(withdrawn) + " ₽";
+        formatMoney(withdrawn) +
+        " ₽";
 
     document.getElementById(
         "clicksValue"
@@ -1413,6 +1913,12 @@ function renderDashboard(data){
         "referralLink"
     ).textContent =
         referralLink;
+
+    updateWithdrawState(
+        balance
+    );
+
+    loadSavedPayoutDetails();
 }
 
 async function loadDashboard(token){
@@ -1426,6 +1932,7 @@ async function loadDashboard(token){
             !data ||
             !data.success
         ){
+
             throw new Error(
                 "Сессия недействительна."
             );
@@ -1559,24 +2066,33 @@ async function copyReferralLink(){
    WITHDRAW
    ========================================================= */
 
-let pendingWithdraw = null;
+function showWithdrawModal(data){
 
-function showWithdrawModal(
-    amount,
-    details
-){
-
-    pendingWithdraw = {
-        amount,
-        details
-    };
+    pendingWithdraw =
+        data;
 
     document.getElementById(
-        "withdrawModalText"
+        "summaryAmount"
     ).textContent =
-        "Создать заявку на выплату " +
-        formatMoney(amount) +
-        " ₽?";
+        formatMoney(data.amount) +
+        " ₽";
+
+    document.getElementById(
+        "summaryPhone"
+    ).textContent =
+        maskPhone(data.phone);
+
+    document.getElementById(
+        "summaryBank"
+    ).textContent =
+        data.bankName;
+
+    document.getElementById(
+        "summaryName"
+    ).textContent =
+        data.firstName +
+        " " +
+        data.lastName;
 
     document.getElementById(
         "withdrawModal"
@@ -1602,77 +2118,60 @@ async function requestWithdraw(){
         withdrawMessage
     );
 
-    const amount =
-        Number(
-            document.getElementById(
-                "withdrawAmount"
-            ).value
-        );
-
-    const details =
-        document.getElementById(
-            "paymentDetails"
-        ).value.trim();
-
-    if(!Number.isFinite(amount)){
-
-        showMessage(
-            withdrawMessage,
-            "Введите сумму."
-        );
-
-        return;
-    }
-
-    if(amount < MIN_WITHDRAW){
-
-        showMessage(
-            withdrawMessage,
-            "Минимальная сумма выплаты — 500 ₽."
-        );
-
-        return;
-    }
-
-    if(!details){
-
-        showMessage(
-            withdrawMessage,
-            "Укажите реквизиты для выплаты."
-        );
-
-        return;
-    }
-
-    /*
-     * Получаем свежий баланс перед созданием заявки.
-     */
     const token =
         getStoredToken();
+
+    if(!token){
+
+        showMessage(
+            withdrawMessage,
+            "Сессия закончилась. Войдите снова."
+        );
+
+        return;
+    }
 
     try{
 
         const session =
             await getSession(token);
 
+        if(
+            !session ||
+            !session.success
+        ){
+
+            throw new Error(
+                "Сессия недействительна."
+            );
+        }
+
         const balance =
             Number(
                 session.balance || 0
             );
 
-        if(amount > balance){
+        const data =
+            getPayoutForm();
+
+        const validationError =
+            validatePayoutForm(
+                data,
+                balance
+            );
+
+        if(validationError){
 
             showMessage(
                 withdrawMessage,
-                "Недостаточно средств на балансе."
+                validationError
             );
 
             return;
         }
 
         showWithdrawModal(
-            amount,
-            details
+            data
         );
 
     }catch(error){
@@ -1708,18 +2207,66 @@ async function confirmWithdraw(){
         const session =
             await getSession(token);
 
-        const userId =
-            session.user_id;
+        if(
+            !session ||
+            !session.success
+        ){
 
-        await rpc(
-            "create_referral_withdrawal",
-            {
-                p_user_id:userId,
-                p_amount:
-                    pendingWithdraw.amount,
-                p_payment_details:
-                    pendingWithdraw.details
-            }
+            throw new Error(
+                "Сессия недействительна."
+            );
+        }
+
+        const result =
+            await rpc(
+                "submit_referral_withdrawal",
+                {
+                    p_user_id:
+                        session.user_id,
+
+                    p_amount:
+                        pendingWithdraw.amount,
+
+                    p_phone:
+                        pendingWithdraw.phone,
+
+                    p_bank_name:
+                        pendingWithdraw.bankName,
+
+                    p_first_name:
+                        pendingWithdraw.firstName,
+
+                    p_last_name:
+                        pendingWithdraw.lastName
+                }
+            );
+
+        if(
+            !result ||
+            !result.success
+        ){
+
+            throw new Error(
+                result?.error ||
+                "Не удалось создать заявку."
+            );
+        }
+
+        localStorage.setItem(
+            "appcore_payout_details",
+            JSON.stringify({
+                phone:
+                    pendingWithdraw.phone,
+
+                bank_name:
+                    pendingWithdraw.bankName,
+
+                first_name:
+                    pendingWithdraw.firstName,
+
+                last_name:
+                    pendingWithdraw.lastName
+            })
         );
 
         closeWithdrawModal();
@@ -1734,9 +2281,13 @@ async function confirmWithdraw(){
             "withdrawAmount"
         ).value = "";
 
-        document.getElementById(
-            "paymentDetails"
-        ).value = "";
+        /*
+         * Обновляем кабинет с сервера,
+         * чтобы баланс сразу изменился.
+         */
+        await loadDashboard(
+            token
+        );
 
     }catch(error){
 
@@ -1750,7 +2301,7 @@ async function confirmWithdraw(){
 
         button.disabled = false;
         button.textContent =
-            "Подтвердить";
+            "Отправить";
     }
 }
 
@@ -1801,9 +2352,7 @@ document.getElementById(
     copyReferralLink
 );
 
-document.getElementById(
-    "withdrawBtn"
-).addEventListener(
+withdrawBtn.addEventListener(
     "click",
     requestWithdraw
 );
